@@ -1,31 +1,32 @@
-import { StyleSheet } from 'react-native';
+import React, {useMemo, useState} from 'react';
+import {Platform, View} from "react-native";
+import {Stack} from "expo-router";
+import ExploreHeader, {categories} from "@/components/ExploreHeader";
+import ListingsData from '@/assets/data/airbnb-listings.json';
+import {IListing} from "@/interfaces/listing";
+import ListingsDataGeo from '@/assets/data/airbnb-listings.geo.json';
+import ListingsMap from "@/components/ListingsMap";
+import ListingsBottomSheet from "@/components/ListingsBottomSheet";
+import {IListingGeoRoot} from "@/interfaces/listingGeo";
 
-import EditScreenInfo from '../../components/EditScreenInfo';
-import { Text, View } from '../../components/Themed';
+const Page = () => {
+    const [category, setCategory] = useState(categories[0].name);
+    const items = useMemo(() => ListingsData as IListing[], []);
+    const geoItems = useMemo(() => ListingsDataGeo as IListingGeoRoot, []);
+    const onDataChanged = (category: string) => {
+        setCategory(category);
+    }
 
-export default function TabOneScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
-  );
-}
+    return (
+        <View style={{flex: 1, marginTop: Platform.OS === 'android' ? 128 : 80}}>
+            <Stack.Screen options={{
+                header: () => <ExploreHeader onCategoryChanged={onDataChanged}/>
+            }}/>
+            {/*<Listings listings={items} category={category}/>*/}
+            <ListingsMap listings={geoItems.features} />
+            <ListingsBottomSheet listings={items} category={category} />
+        </View>
+    );
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});
+export default Page;
